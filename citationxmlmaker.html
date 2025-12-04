@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BibTeX to Word XML Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .xml-preview {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+
+    <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-600 text-white p-2 rounded-lg">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-slate-900">BibToWord</span>
+                </div>
+                <a href="#" class="text-sm font-medium text-slate-500 hover:text-blue-600 transition">v1.0.0</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        
+        <div class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">
+                Konversi <span class="text-blue-600">BibTeX</span> ke <span class="text-orange-600">Word XML</span>
+            </h1>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                Upload file <code>.bib</code> Anda atau paste teksnya di bawah, lalu download file XML untuk diimpor ke "Manage Sources" Microsoft Word.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2">
+                        <i class="fa-brands fa-markdown text-blue-500"></i> Input BibTeX
+                    </h2>
+                    <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2 px-3 rounded-lg transition">
+                        <i class="fa-solid fa-upload mr-1"></i> Upload File
+                        <input type="file" id="fileInput" accept=".bib" class="hidden">
+                    </label>
+                </div>
+                
+                <textarea id="bibInput" class="w-full flex-grow bg-slate-50 border border-slate-200 rounded-xl p-4 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none transition" placeholder="@article{key, ...}" rows="12"></textarea>
+                
+                <button onclick="convert()" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-blue-600/30 transition transform hover:-translate-y-0.5 active:translate-y-0">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Konversi Sekarang
+                </button>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 flex flex-col h-full relative overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-file-code text-orange-500"></i> Output XML
+                    </h2>
+                    <span id="statusBadge" class="hidden bg-green-100 text-green-700 text-xs font-bold py-1 px-3 rounded-full">
+                        <i class="fa-solid fa-check mr-1"></i> Berhasil
+                    </span>
+                </div>
+
+                <div class="relative flex-grow">
+                    <pre class="absolute inset-0 w-full h-full bg-slate-900 text-slate-200 rounded-xl p-4 font-mono text-xs overflow-auto xml-preview"><code id="xmlOutput">&lt;!-- Hasil konversi akan muncul di sini --&gt;</code></pre>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    <button onclick="copyToClipboard()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition">
+                        <i class="fa-regular fa-copy mr-2"></i> Copy
+                    </button>
+                    <button onclick="downloadXML()" id="downloadBtn" disabled class="bg-orange-600 hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-orange-600/30 transition transform hover:-translate-y-0.5 active:translate-y-0">
+                        <i class="fa-solid fa-download mr-2"></i> Download .xml
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-12 bg-blue-50 rounded-xl p-6 border border-blue-100">
+            <h3 class="font-bold text-blue-900 mb-3"><i class="fa-solid fa-circle-info mr-2"></i>Cara Memasang di Word:</h3>
+            <ol class="list-decimal list-inside space-y-2 text-sm text-blue-800">
+                <li>Download file <strong>Sources.xml</strong> dari tombol di atas.</li>
+                <li>Buka Microsoft Word, pergi ke tab <strong>References</strong> > <strong>Manage Sources</strong>.</li>
+                <li>Klik tombol <strong>Browse...</strong>.</li>
+                <li>Pilih file <code>Sources.xml</code> yang baru saja Anda download.</li>
+                <li>Pilih sumber di kolom kiri (Master List), lalu klik <strong>Copy -></strong> untuk memindahkannya ke Current List.</li>
+            </ol>
+        </div>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+        <div class="text-center text-slate-400 text-sm">
+            <p>&copy; 2025 BibToWord Converter. Client-side processing only.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mapping Type BibTex ke MS Word
+        const typeMap = {
+            'article': 'JournalArticle',
+            'book': 'Book',
+            'inproceedings': 'ConferenceProceedings',
+            'proceedings': 'ConferenceProceedings',
+            'phdthesis': 'Report',
+            'mastersthesis': 'Report',
+            'techreport': 'Report',
+            'misc': 'Misc',
+            'online': 'InternetSite',
+            'website': 'InternetSite'
+        };
+
+        // Handle File Upload
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('bibInput').value = e.target.result;
+                convert();
+            };
+            reader.readAsText(file);
+        });
+
+        // Helper: Escape XML Characters
+        function escapeXml(unsafe) {
+            if (!unsafe) return "";
+            return unsafe.replace(/[<>&'"]/g, function (c) {
+                switch (c) {
+                    case '<': return '&lt;';
+                    case '>': return '&gt;';
+                    case '&': return '&amp;';
+                    case '\'': return '&apos;';
+                    case '"': return '&quot;';
+                }
+            });
+        }
+
+        // Helper: Parse Authors
+        function parseAuthors(authorString) {
+            if (!authorString) return [];
+            // Split by ' and '
+            const authors = authorString.split(/\s+and\s+/i);
+            return authors.map(name => {
+                name = name.trim().replace(/[{}]/g, ''); // Remove braces
+                let first = '', last = '';
+                
+                if (name.includes(',')) {
+                    // Format: Last, First
+                    const parts = name.split(',');
+                    last = parts[0].trim();
+                    first = parts.slice(1).join(',').trim();
+                } else {
+                    // Format: First Last (Simplistic assumption: last word is Last Name)
+                    const parts = name.split(' ');
+                    if (parts.length > 1) {
+                        last = parts.pop();
+                        first = parts.join(' ');
+                    } else {
+                        last = name;
+                    }
+                }
+                return { first, last };
+            });
+        }
+
+        // Main Convert Function
+        function convert() {
+            const bibContent = document.getElementById('bibInput').value;
+            if (!bibContent.trim()) {
+                alert("Mohon masukkan teks BibTeX terlebih dahulu.");
+                return;
+            }
+
+            let xmlContent = '<?xml version="1.0" encoding="UTF-8"?>\n';
+            xmlContent += '<b:Sources SelectedStyle="\\APA.XSL" StyleName="APA" xmlns:b="http://schemas.microsoft.com/office/word/2004/10/bibliography">\n';
+
+            // Regex untuk memecah entry BibTeX (@type{key, ...})
+            // Ini parser sederhana, mungkin gagal pada nested braces yang kompleks, tapi cukup untuk standar BibTeX
+            const entryRegex = /@(\w+)\s*\{([^,]+),([\s\S]*?)\}(?=\s*@|$)/g;
+            let match;
+            let count = 0;
+
+            while ((match = entryRegex.exec(bibContent)) !== null) {
+                const bibType = match[1].toLowerCase();
+                const citationKey = match[2].trim();
+                const body = match[3];
+
+                // Parse Fields inside entry
+                const fields = {};
+                const fieldRegex = /(\w+)\s*=\s*\{?([^}]+)\}?/g; 
+                // Note: Regex di atas simplified. Untuk value yang tidak pakai {} (misal angka), dan {} nested, perlu logic lebih kompleks.
+                // Kita pakai pendekatan line-by-line untuk lebih aman di JS sederhana
+                
+                const lines = body.split(/,\s*\n/);
+                lines.forEach(line => {
+                    const eqIndex = line.indexOf('=');
+                    if (eqIndex > -1) {
+                        const key = line.substring(0, eqIndex).trim().toLowerCase();
+                        let val = line.substring(eqIndex + 1).trim();
+                        // Bersihkan koma trailing dan braces kurawal
+                        val = val.replace(/,$/, '').replace(/^\{|\}$|^"|"$/g, ''); 
+                        fields[key] = val;
+                    }
+                });
+
+                // Mapping Source Type
+                const wordType = typeMap[bibType] || 'Misc';
+
+                xmlContent += `  <b:Source>\n`;
+                xmlContent += `    <b:Tag>${escapeXml(citationKey)}</b:Tag>\n`;
+                xmlContent += `    <b:SourceType>${wordType}</b:SourceType>\n`;
+
+                // Authors
+                if (fields.author) {
+                    xmlContent += `    <b:Author><b:Author><b:NameList>\n`;
+                    const authorList = parseAuthors(fields.author);
+                    authorList.forEach(a => {
+                        xmlContent += `      <b:Person><b:Last>${escapeXml(a.last)}</b:Last><b:First>${escapeXml(a.first)}</b:First></b:Person>\n`;
+                    });
+                    xmlContent += `    </b:NameList></b:Author></b:Author>\n`;
+                }
+
+                // Common Fields
+                if (fields.title) xmlContent += `    <b:Title>${escapeXml(fields.title)}</b:Title>\n`;
+                if (fields.year) xmlContent += `    <b:Year>${escapeXml(fields.year)}</b:Year>\n`;
+                if (fields.pages) xmlContent += `    <b:Pages>${escapeXml(fields.pages)}</b:Pages>\n`;
+                
+                // Type Specific Fields
+                if (wordType === 'JournalArticle') {
+                    if (fields.journal) xmlContent += `    <b:JournalName>${escapeXml(fields.journal)}</b:JournalName>\n`;
+                    if (fields.volume) xmlContent += `    <b:Volume>${escapeXml(fields.volume)}</b:Volume>\n`;
+                    if (fields.number) xmlContent += `    <b:Number>${escapeXml(fields.number)}</b:Number>\n`; // Issue
+                    if (fields.month) xmlContent += `    <b:Month>${escapeXml(fields.month)}</b:Month>\n`;
+                } else if (wordType === 'Book' || wordType === 'Report') {
+                    if (fields.publisher) xmlContent += `    <b:Publisher>${escapeXml(fields.publisher)}</b:Publisher>\n`;
+                    if (fields.address) xmlContent += `    <b:City>${escapeXml(fields.address)}</b:City>\n`;
+                } else if (wordType === 'ConferenceProceedings') {
+                    if (fields.booktitle) xmlContent += `    <b:PublicationTitle>${escapeXml(fields.booktitle)}</b:PublicationTitle>\n`;
+                }
+
+                // DOI / URL (Standard Number usually holds DOI in Word if not specifically DOI field)
+                if (fields.doi) xmlContent += `    <b:StandardNumber>${escapeXml(fields.doi)}</b:StandardNumber>\n`;
+                if (fields.url) xmlContent += `    <b:URL>${escapeXml(fields.url)}</b:URL>\n`;
+
+                xmlContent += `  </b:Source>\n`;
+                count++;
+            }
+
+            xmlContent += '</b:Sources>';
+
+            // Update UI
+            document.getElementById('xmlOutput').innerText = xmlContent;
+            document.getElementById('downloadBtn').disabled = false;
+            document.getElementById('statusBadge').classList.remove('hidden');
+            
+            // Auto scroll to result if needed (optional)
+        }
+
+        function downloadXML() {
+            const text = document.getElementById('xmlOutput').innerText;
+            const blob = new Blob([text], { type: "text/xml" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "Sources.xml";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('xmlOutput').innerText;
+            if(text.includes("Hasil konversi")) return;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("XML berhasil disalin!");
+            });
+        }
+    </script>
+</body>
+</html>
